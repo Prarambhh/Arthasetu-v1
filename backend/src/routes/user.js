@@ -55,9 +55,14 @@ router.get('/profile/:userId', (req, res) => {
  * GET /user/me
  * Auth required. My profile including balance.
  */
-router.get('/me', authenticate, (req, res) => {
+router.get('/me', authenticate, async (req, res) => {
   const user = UserStore.findById(req.user.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Get true balance from Postgres
+  const p2pDb = require('../p2p/db').default;
+  const wallet = await p2pDb('wallets').where({ user_id: user.userId }).first();
+  const trueBalance = wallet ? Number(wallet.balance) : user.balance;
 
   const loans = LoanStore.getAll().filter(l =>
     l.borrowerId === user.userId || l.lenderId === user.userId
@@ -71,7 +76,7 @@ router.get('/me', authenticate, (req, res) => {
     creditScore: user.creditScore,
     trustTier: user.trustTier,
     maxLoan: user.creditScore * 100,
-    balance: user.balance,
+    balance: trueBalance,
     onTimeRepayments: user.onTimeRepayments,
     missedPayments: user.missedPayments,
     activeLoans: user.activeLoans,

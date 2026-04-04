@@ -10,6 +10,7 @@ import Repay from './pages/Repay';
 import Profile from './pages/Profile';
 import Explorer from './pages/Explorer';
 import Community from './pages/Community';
+import LoanDetail from './pages/LoanDetail';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="/borrow" element={<ProtectedRoute><Borrow /></ProtectedRoute>} />
         <Route path="/lend" element={<ProtectedRoute><Lend /></ProtectedRoute>} />
         <Route path="/repay" element={<ProtectedRoute><Repay /></ProtectedRoute>} />
+        <Route path="/loan/:id" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

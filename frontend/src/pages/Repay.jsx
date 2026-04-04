@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { repayLoan } from '../api';
+import { repayLoan, getContracts } from '../api';
 import { LoanCard } from '../components/LoanCard';
 import { RotateCcw, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 
@@ -14,7 +14,29 @@ export default function Repay() {
   const [amount, setAmount] = useState('');
   const navigate = useNavigate();
 
-  const myActiveLoans = user?.loans?.filter(l => l.borrowerId === user.userId && l.status === 'ACTIVE') || [];
+  const [myActiveLoans, setMyActiveLoans] = useState([]);
+
+  const fetchActiveObligations = async () => {
+    try {
+      const res = await getContracts(); // from api
+      const formattedContracts = res.data.data ? res.data.data.map(c => ({
+        ...c,
+        loanId: c.loan_id,
+        borrowerId: c.borrower_id,
+        lenderId: c.lender_id,
+        status: c.status === 'pending' ? 'ACTIVE' : 'REPAID',
+        borrowerName: c.borrowerName || 'Unknown Counterparty',
+        lenderName: c.lenderName
+      })) : [];
+      setMyActiveLoans(formattedContracts.filter(l => l.borrowerId === user?.userId && l.status === 'ACTIVE'));
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.userId) fetchActiveObligations();
+  }, [user?.userId]);
 
   const handleRepay = async (e) => {
     e.preventDefault();
@@ -28,6 +50,7 @@ export default function Repay() {
       await repayLoan(selectedLoan.loanId, Number(amount));
       setSuccess('Settlement successfully processed. Balance credited to lender.');
       await refreshUser();
+      await fetchActiveObligations();
       setSelectedLoan(null);
       setAmount('');
     } catch (err) {
@@ -37,7 +60,7 @@ export default function Repay() {
     }
   };
 
-  const remainingPrincipal = selectedLoan ? selectedLoan.amount - selectedLoan.repaidAmount : 0;
+  const remainingPrincipal = selectedLoan ? parseFloat(selectedLoan.amount) - (selectedLoan.repaidAmount || 0) : 0;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -71,7 +94,7 @@ export default function Repay() {
                       currentUserId={user?.userId} 
                       onRepay={() => {
                         setSelectedLoan(loan);
-                        setAmount(loan.amount - loan.repaidAmount);
+                        setAmount(loan.amount - (loan.repaidAmount || 0));
                         setError('');
                         setSuccess('');
                       }} 

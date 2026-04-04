@@ -22,12 +22,28 @@ export const getMe = () => API.get('/user/me');
 export const getUserProfile = (userId) => API.get(`/user/profile/${userId}`);
 export const getAllUsers = () => API.get('/user/all');
 
-// Loans
-export const getAllLoans = () => API.get('/loan/all');
-export const getLoan = (loanId) => API.get(`/loan/${loanId}`);
-export const createLoan = (amount, durationDays) => API.post('/loan/create', { amount, durationDays });
-export const fundLoan = (loanId) => API.post('/loan/fund', { loanId });
-export const repayLoan = (loanId, amount) => API.post('/loan/repay', { loanId, amount });
+// ── Loans v2 ─────────────────────────────────────────────────────────────
+export const getMyRequests = () => API.get('/api/v2/loans/me'); // Needs to be written if not exist, or mapped. We can use /api/v2/contracts instead for dashboard.
+export const getPendingBroadcasts = () => API.get('/api/v2/loans/pending');
+export const createLoan = (amount) => API.post('/api/v2/loans', { amount });
+export const acceptLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/accept`);
+export const addRequirements = (loanId, requirements) => API.post(`/api/v2/loans/${loanId}/requirements`, { requirements });
+export const uploadDocument = (loanId, requirementId, fileReference) => API.post(`/api/v2/loans/${loanId}/documents`, { requirementId, fileReference });
+export const triggerReview = (loanId) => API.post(`/api/v2/loans/${loanId}/review`);
+export const approveLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/approve`);
+export const rejectLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/reject`);
+export const getLoanDetail = (loanId) => API.get(`/api/v2/loans/${loanId}`);
+export const repayLoan = (loanId, amount) => API.post(`/api/v2/loans/${loanId}/repay`, { amount }); // TODO: V2 Backend Implementation Required
+
+// ── Guarantors v2 ────────────────────────────────────────────────────────
+export const getMyGuarantorRecord = (loanId) => API.get(`/api/v2/loans/${loanId}/guarantors/me`);
+export const approveGuarantor = (loanId) => API.post(`/api/v2/loans/${loanId}/guarantors/me/approve`);
+export const rejectGuarantor = (loanId) => API.post(`/api/v2/loans/${loanId}/guarantors/me/reject`);
+
+// ── Contracts & Wallet v2 ────────────────────────────────────────────────
+export const getContracts = (status) => API.get(`/api/v2/contracts${status ? `?status=${status}` : ''}`);
+export const getContractDetail = (contractId) => API.get(`/api/v2/contracts/${contractId}`);
+export const getMyWallet = () => API.get('/api/v2/wallets/me');
 
 // Chain
 export const getChain = () => API.get('/chain');

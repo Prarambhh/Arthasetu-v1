@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getAllLoans, fundLoan } from '../api';
+import { getPendingBroadcasts, acceptLoan } from '../api';
 import { LoanCard } from '../components/LoanCard';
 import { TrendingUp, Search, Loader, AlertCircle, Wallet } from 'lucide-react';
 
@@ -14,13 +14,26 @@ export default function Lend() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    getAllLoans()
-      .then(res => setLoans(res.data))
+    getPendingBroadcasts()
+      .then(res => {
+        // Map V2 data format to component expectations
+        const mapped = res.data.data.map(l => ({
+          ...l,
+          loanId: l.id,
+          borrowerId: l.borrower_id,
+          createdAt: l.requested_at,
+          status: l.status.toUpperCase(), // 'requested' -> 'REQUESTED'
+          borrowerTier: 'MODERATE', // Mocked mapping
+          borrowerScore: 50,        // Mocked mapping
+          durationDays: 30          // Term no longer explicitly stored in V2
+        }));
+        setLoans(mapped);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const pending = loans.filter(l => {
-    if (l.status !== 'PENDING') return false;
+    if (l.status !== 'REQUESTED') return false;
     if (l.borrowerId === user?.userId) return false;
     if (search && !l.borrowerName?.toLowerCase().includes(search.toLowerCase())) return false;
     if (filter === 'prime' && l.borrowerTier !== 'PRIME') return false;
@@ -33,9 +46,10 @@ export default function Lend() {
     setFunding(loanId);
     setError('');
     try {
-      await fundLoan(loanId);
-      const res = await getAllLoans();
-      setLoans(res.data);
+      await acceptLoan(loanId);
+      const res = await getPendingBroadcasts();
+      const mapped = res.data.data.map(l => ({ ...l, loanId: l.id, borrowerId: l.borrower_id, createdAt: l.requested_at, status: l.status.toUpperCase() }));
+      setLoans(mapped);
       await refreshUser();
     } catch (err) {
       setError(err.response?.data?.error || 'Allocation error');

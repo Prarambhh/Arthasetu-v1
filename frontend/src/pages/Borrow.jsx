@@ -40,8 +40,8 @@ export default function Borrow() {
     setLoading(true);
     setError('');
     try {
-      const res = await createLoan(requestedAmount, duration);
-      setSuccess(res.data.loan);
+      const res = await createLoan(requestedAmount);
+      setSuccess(res.data.data);
       await refreshUser();
     } catch (err) {
       setError(err.response?.data?.error || 'Execution failed');
@@ -61,8 +61,7 @@ export default function Borrow() {
           <p className="text-slate-500 mb-6 text-sm">Your request is queued on the ledger and awaiting funding allocation.</p>
           <div className="bg-slate-50 dark:bg-surface-950 p-5 rounded-xl border border-slate-200 dark:border-surface-800 text-left mb-6 space-y-3 text-sm">
             <div className="flex justify-between items-center"><span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">Principal</span><span className="font-bold text-slate-700 dark:text-slate-200">₹{success.amount.toLocaleString()}</span></div>
-            <div className="flex justify-between items-center"><span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">Term</span><span className="font-bold text-slate-700 dark:text-slate-200">{success.durationDays} days</span></div>
-            <div className="flex justify-between items-center"><span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">Status</span><span className="badge-pending">Open</span></div>
+            <div className="flex justify-between items-center"><span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">Status</span><span className="badge-pending">Broadcasting</span></div>
           </div>
           <div className="flex gap-3">
             <button onClick={() => setSuccess(null)} className="btn-secondary flex-1">Issue Another</button>

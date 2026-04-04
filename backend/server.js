@@ -1,4 +1,6 @@
 require('dotenv').config();
+// Enable TypeScript imports for the new P2P module
+require('ts-node').register({ project: require('path').join(__dirname, 'tsconfig.json'), transpileOnly: true });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -12,8 +14,8 @@ app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
-app.use(express.json());
-
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Ensure data directory exists
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -26,11 +28,15 @@ getBlockchain();
 const { seed } = require('./src/seed/seed');
 seed();
 
-// Routes
+// Legacy routes
 app.use('/auth', require('./src/routes/auth'));
 app.use('/loan', require('./src/routes/loan'));
 app.use('/user', require('./src/routes/user'));
 app.use('/chain', require('./src/routes/chain'));
+
+// ── P2P Lending routes (TypeScript domain) ──────────────────────────────
+const { default: p2pRouter } = require('./src/p2p/routes');
+app.use('/api/v2', p2pRouter);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -49,11 +55,9 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
-});
+// Global error handler (handles both legacy errors and typed domain errors)
+const { errorHandler } = require('./src/p2p/middleware/errorHandler');
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`\n🔗 ArthaSetu Protocol running on http://localhost:${PORT}`);

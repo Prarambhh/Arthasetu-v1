@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAllLoans, getHealth } from '../api';
+import { getMyRequests, getContracts, getHealth } from '../api';
 import { LoanCard } from '../components/LoanCard';
 import { TrustTierBadge } from '../components/TrustTierBadge';
 import { formatAddress } from '../utils/wallet';
@@ -37,9 +37,38 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getAllLoans(), getHealth(), refreshUser()])
-      .then(([loansRes, healthRes]) => {
-        setLoans(loansRes.data);
+    Promise.all([getMyRequests(), getContracts(), getHealth(), refreshUser()])
+      .then(([reqsRes, contractsRes, healthRes]) => {
+        const mappedReqs = reqsRes.data.data.map(l => ({
+          ...l,
+          loanId: l.id,
+          borrowerId: l.borrower_id,
+          lenderId: l.lender_id,
+          createdAt: l.requested_at,
+          status: l.status.toUpperCase(),
+          durationDays: 30, // Mock
+          borrowerName: l.borrowerName || 'Unknown Counterparty',
+          lenderName: l.lenderName,
+          borrowerScore: 50,
+          borrowerTier: 'MODERATE',
+        }));
+        
+        const mappedContracts = contractsRes.data.data ? contractsRes.data.data.map(c => ({
+            ...c,
+            loanId: c.loan_id,
+            borrowerId: c.borrower_id,
+            lenderId: c.lender_id,
+            createdAt: c.issued_at,
+            status: c.status === 'pending' ? 'ACTIVE' : 'REPAID',
+            durationDays: 30,
+            borrowerName: c.borrowerName || 'Unknown Counterparty',
+            lenderName: c.lenderName,
+            borrowerScore: 50,
+            borrowerTier: 'MODERATE',
+        })) : [];
+
+        // Currently Dashboard mixes all pending and active into 'loans' array
+        setLoans([...mappedReqs, ...mappedContracts]);
         setHealth(healthRes.data);
       })
       .finally(() => setLoading(false));
@@ -47,7 +76,7 @@ export default function Dashboard() {
 
   const myLoans = loans.filter(l => l.borrowerId === user?.userId || l.lenderId === user?.userId);
   const activeLoans = myLoans.filter(l => l.status === 'ACTIVE');
-  const pendingLoans = myLoans.filter(l => l.status === 'PENDING');
+  const pendingLoans = myLoans.filter(l => ['PENDING', 'REQUESTED', 'DOCS_REQUESTED', 'UNDER_REVIEW', 'APPROVED'].includes(l.status));
   const repaidLoans = myLoans.filter(l => l.status === 'REPAID');
 
   if (loading) return (

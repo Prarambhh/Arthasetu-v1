@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { TrustTierBadge, LoanStatusBadge } from './TrustTierBadge';
 
 function formatCurrency(n) {
@@ -80,7 +81,7 @@ export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
 
       {/* Progress bar for active/repaid */}
       {(loan.status === 'ACTIVE' || loan.status === 'REPAID') && (
-        <ProgressBar repaid={loan.repaidAmount} total={loan.amount} status={loan.status} />
+        <ProgressBar repaid={loan.repaidAmount || 0} total={loan.amount} status={loan.status} />
       )}
 
       {/* Dates Grid */}
@@ -98,12 +99,12 @@ export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
       </div>
 
       {/* Actions */}
-      {loan.status === 'PENDING' && !isBorrower && onFund && (
+      {loan.status === 'REQUESTED' && !isBorrower && onFund && (
         <button
           onClick={() => onFund(loan.loanId)}
           className="btn-primary w-full mt-2 border border-bitcoin-600 hover:shadow-glow-orange dark:border-transparent transition-all"
         >
-          Fund This Loan
+          Accept Application
         </button>
       )}
       {loan.status === 'ACTIVE' && isBorrower && onRepay && (
@@ -113,6 +114,14 @@ export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
         >
           Make Repayment
         </button>
+      )}
+      {(isBorrower || isLender) && (
+        <Link 
+          to={`/loan/${loan.loanId}`}
+          className="btn-secondary w-full mt-2 text-center block"
+        >
+          Open Deal Room
+        </Link>
       )}
     </div>
   );

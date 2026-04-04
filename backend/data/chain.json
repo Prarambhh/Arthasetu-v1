@@ -234,5 +234,65 @@
     },
     "prevHash": "22d909b95ca1b2bc771e1d574560690ab54899ee33ca4f13e2bbbee4f210c073",
     "hash": "ab36b9591d1c7e24425f9a5274b1ddc0ef7ba5cd8ff21de73b7e3b0bdba6b2c7"
+  },
+  {
+    "index": 18,
+    "timestamp": "2026-04-04T18:34:01.796Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "01a4928b-7110-4846-8933-f22b953acb78",
+      "username": "lender_test",
+      "walletAddress": "0x3cafc19cbd954be16a88ad587546c8dbe6e21a2a"
+    },
+    "prevHash": "ab36b9591d1c7e24425f9a5274b1ddc0ef7ba5cd8ff21de73b7e3b0bdba6b2c7",
+    "hash": "7e47e89adb96ca722a0f697f706494c60c81bdf8a1f20684dfd0dac0904d299e"
+  },
+  {
+    "index": 19,
+    "timestamp": "2026-04-04T18:34:40.149Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "6b74b12f-3cd9-4b63-a882-8be42c068dad",
+      "username": "borrower_test",
+      "walletAddress": "0xa1cfa76fa8dcd77a52fe3ffd280b0050539d2d4b"
+    },
+    "prevHash": "7e47e89adb96ca722a0f697f706494c60c81bdf8a1f20684dfd0dac0904d299e",
+    "hash": "52cfe7a1529fb742f032bba1b0c156b94eeb2e9e89be4bb03e2c45c5da752f73"
+  },
+  {
+    "index": 20,
+    "timestamp": "2026-04-04T18:36:39.055Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "7bd17cd8-4acf-4683-9c22-49b4e4a9a744",
+      "username": "User A",
+      "walletAddress": "0xb8664460f5ef1de1df40d82a95604fd55e853e59"
+    },
+    "prevHash": "52cfe7a1529fb742f032bba1b0c156b94eeb2e9e89be4bb03e2c45c5da752f73",
+    "hash": "a7e4b2131d47a540ff7ea9c100765ee327c08452a0b7924251f7dc097fd20db9"
+  },
+  {
+    "index": 21,
+    "timestamp": "2026-04-04T18:39:05.264Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "e2ac6162-e165-40e8-9bac-3d8d20cb79ed",
+      "username": "unique_user_999",
+      "walletAddress": "0xd9f810f97860eefbf89f59e60eb2e1a37223aeb7"
+    },
+    "prevHash": "a7e4b2131d47a540ff7ea9c100765ee327c08452a0b7924251f7dc097fd20db9",
+    "hash": "398df8407d13cb2ac9c49f22434a7c62d3c963e4800c3bbdee82512f103c728b"
+  },
+  {
+    "index": 22,
+    "timestamp": "2026-04-04T18:40:06.138Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "0316f2e6-0798-49c2-af4a-57544b2e598a",
+      "username": "User B",
+      "walletAddress": "0x58efaa8175f2ce1694b41aae6f791ba71b23a09d"
+    },
+    "prevHash": "398df8407d13cb2ac9c49f22434a7c62d3c963e4800c3bbdee82512f103c728b",
+    "hash": "be5af23c5bda4a2766f474ef0169827f89c819f9cbdf6b4905b290dd303fcbe3"
   }
 ]

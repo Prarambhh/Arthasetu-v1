@@ -6,6 +6,9 @@ const { UserStore } = require('../models/UserStore');
 const { WalletService } = require('../services/WalletService');
 const { generateWallet, verifySignature } = require('../services/WalletService');
 const { getBlockchain } = require('../blockchain/Blockchain');
+// Sync new users into pg for P2P v2
+let pgDb = null;
+try { pgDb = require('../p2p/db').default; } catch(e) { /* p2p module not loaded */ }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'arthasetu_secret';
 
@@ -14,7 +17,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'arthasetu_secret';
  * Creates a new wallet-based identity.
  * Returns: { userId, walletAddress, publicKey, privateKey (ONCE ONLY), nonce }
  */
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { username } = req.body;
     if (!username || username.trim().length < 3) {
@@ -44,7 +47,7 @@ router.post('/register', (req, res) => {
     });
 
     // Private key is returned ONCE — user must save it
-    res.status(201).json({
+    const responsePayload = {
       message: 'Wallet created. Save your private key — it will NOT be shown again.',
       userId: user.userId,
       username: user.username,
@@ -54,7 +57,17 @@ router.post('/register', (req, res) => {
       creditScore: user.creditScore,
       trustTier: user.trustTier,
       balance: user.balance,
-    });
+    };
+
+    // Sync into PostgreSQL for v2 P2P endpoints
+    if (pgDb) {
+      try {
+        await pgDb('users').insert({ id: userId, name: username.trim(), email: `${username.trim()}@arthasetu.app`, hashed_password: 'legacy_wallet_auth' }).onConflict('id').ignore();
+        await pgDb('wallets').insert({ user_id: userId, balance: user.balance || 10000 }).onConflict('user_id').ignore();
+      } catch (pgErr) { console.error('[PG Sync Error]', pgErr.message); }
+    }
+
+    res.status(201).json(responsePayload);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
