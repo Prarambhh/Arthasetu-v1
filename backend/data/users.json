@@ -1,0 +1,121 @@
+[
+  {
+    "userId": "3a99efb1-9db9-4566-94a0-457b4801b140",
+    "username": "alice_defi",
+    "walletAddress": "0xc90b37179bfe2cd9fa6658c47b4ca9e49412a416",
+    "publicKey": "041531ecebcb0e2e44ecdf331769c4875b5686cd807ad5cee07a240b2737e357ff76d551a83d8128198f726ab18f46190ef10d298b28dfe1b47acf656bde3592e6",
+    "nonce": "033d98dd-98e9-46d4-9764-b36a07af7e89",
+    "creditScore": 100,
+    "trustTier": "PRIME",
+    "loanHistory": [
+      "a1f377e9-1f56-4453-9886-432afabecd9a",
+      "686e6c30-e5ec-4bfd-bd0f-39cfc9e393b5",
+      "efd3ab86-ba99-42b1-95cb-a442e9368412"
+    ],
+    "balance": 13000,
+    "onTimeRepayments": 4,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-04T07:06:52.251Z"
+  },
+  {
+    "userId": "e02a009c-a3d1-4ab5-a6d3-e4ef908fb379",
+    "username": "bob_lender",
+    "walletAddress": "0xf8950cc6a551f257764339fefa8e281fee6aaa68",
+    "publicKey": "04cc24c23067fe3dec677476271e26853c65d0edc76278e72703fed1780af6c2c68e7e9b0c80a58417c10b99475ee16b34ad24f8914f69c8bdeef9f4d9920ea3c7",
+    "nonce": "db730cf3-7874-4005-b6fe-740151ec9b54",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [
+      "a1f377e9-1f56-4453-9886-432afabecd9a",
+      "686e6c30-e5ec-4bfd-bd0f-39cfc9e393b5"
+    ],
+    "balance": 27000,
+    "onTimeRepayments": 1,
+    "missedPayments": 0,
+    "activeLoans": 2,
+    "createdAt": "2026-04-04T07:06:52.280Z"
+  },
+  {
+    "userId": "aa135b30-de3e-4c80-81f3-20d631372a67",
+    "username": "charlie_risk",
+    "walletAddress": "0x006afe24f09450f7c0336b71268628d871e37d6c",
+    "publicKey": "044efe2117ca920ec9dd2050efd3ba635b0fc25aef71854361efc7c11335d168e501d5192e932d2a69172b46b3cae14e6300e5e75d9b707e3044e4dc953e6f87a6",
+    "nonce": "a67b6184-cc93-49b9-9636-7b64d53c18a9",
+    "creditScore": 35,
+    "trustTier": "MODERATE",
+    "loanHistory": [
+      "8db083fa-65f0-4221-aaec-9b11b019cdc4"
+    ],
+    "balance": 8000,
+    "onTimeRepayments": 0,
+    "missedPayments": 1,
+    "activeLoans": 1,
+    "createdAt": "2026-04-04T07:06:52.306Z"
+  },
+  {
+    "userId": "7f478c14-3da8-4c0b-a7f0-6cd684bcaca4",
+    "username": "testuser_retry",
+    "walletAddress": "0x8c22d639508109923f625cb088f95bfff63ad755",
+    "publicKey": "04402028cec48a73bf01117feca3f66723071e45d67ec1de8ef0d2e2b44360b059b6d1a2acdd662d782a39d38ab963f159805116aeedbd0c0e97b9c00d5e6871c0",
+    "nonce": "d27cb9e6-d22b-4e3d-bb8e-fecdf3ce69b7",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [
+      "cb509ea2-f36d-4ad2-9fe8-4dee71ed5a11"
+    ],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-04T07:24:49.670Z"
+  },
+  {
+    "userId": "e85a2e45-ed55-4f7a-8200-fdc07eeb6cf6",
+    "username": "fintech_demonstrator",
+    "walletAddress": "0xacce0901da2ef5f7a588ad7367f08e41b8706693",
+    "publicKey": "04f06dba81f041582fe1a6b1feddbf0109906600b08b06cf2ee2746a328b93c77b1ae355768bf62c1e874c1fae86ba47b00d440068c603311c465a92278befc1d6",
+    "nonce": "15a0e406-1b91-47ee-bda0-ea3f7ff3efc6",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [
+      "b8e6d54a-a877-4ac2-bfa8-3154bb803e2b",
+      "a8f6f2ca-7a88-4556-b8bb-7e27f3014191"
+    ],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-04T07:45:31.582Z"
+  },
+  {
+    "userId": "29edcb44-261c-47d6-9f3b-ccc5a830f52b",
+    "username": "theme_tester",
+    "walletAddress": "0xc9db13fe575830513ccfcf5c45b19d06af36494a",
+    "publicKey": "04db68624760f90c588f4d59682a594c965fce5397f43af40de77276ee275838ec853091994a3c192fb067af91933aa9b19ac0799614be9512794d421eee899d46",
+    "nonce": "60d999ad-2542-4c44-9f48-e5577f58661b",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-04T10:11:40.571Z"
+  },
+  {
+    "userId": "93dda584-d4cf-4892-a520-f3368cb67a26",
+    "username": "Prarambh",
+    "walletAddress": "0xdfd14a5c2f24fb377f1972a15c42883a0b095264",
+    "publicKey": "043ba4125d423a446846e61856ca3eee451e4b1e455b5eb29abea2e19b4e2626097dd11e01b26914cd87d3a34fb1e2c6a4c38e27a896f983bd7a1d53b5797feec3",
+    "nonce": "4b11d43f-d8af-4867-903a-700024b30cce",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-04T11:35:01.240Z"
+  }
+]

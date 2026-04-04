@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans bg-surface-light_alt text-slate-900 transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-surface-dark_alt text-slate-100;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer components {
+  /* Generic Dashboard Card */
+  .dashboard-card {
+    @apply bg-surface-light border border-borderc-light rounded-2xl shadow-fintech-light transition-all duration-300 relative overflow-hidden;
+  }
+  .dark .dashboard-card {
+    @apply bg-surface-dark border border-borderc-dark shadow-none hover:shadow-glow-orange hover:border-bitcoin-500/50;
+  }
+
+  /* Interaction variants for cards */
+  .card-hover {
+    @apply hover:-translate-y-1 hover:shadow-fintech-lg-light transition-all duration-300;
+  }
+  .dark .card-hover {
+    @apply hover:shadow-glow-orange hover:-translate-y-1 hover:border-bitcoin-500/50;
+  }
+
+  /* Input fields */
+  .input {
+    @apply w-full bg-surface-light_alt border border-slate-300 text-slate-900 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-bitcoin-500/50 focus:border-bitcoin-500 transition-all font-mono shadow-sm;
+  }
+  .dark .input {
+    @apply bg-black/40 border border-borderc-dark text-slate-100 focus:shadow-glow-orange focus:ring-1 focus:ring-bitcoin-500 focus:border-bitcoin-500;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply font-semibold bg-gradient-to-r from-bitcoin-500 to-bitcoin-400 text-white px-5 py-2.5 rounded-xl transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95;
+  }
+  .dark .btn-primary {
+    @apply hover:shadow-glow-orange-strong;
+  }
+
+  .btn-secondary {
+    @apply font-semibold bg-surface-light border border-slate-300 text-slate-700 px-5 py-2.5 rounded-xl transition-all duration-300 hover:bg-slate-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 shadow-sm;
+  }
+  .dark .btn-secondary {
+    @apply bg-surface-dark border-borderc-dark text-slate-300 hover:bg-surface-800 hover:text-white hover:border-slate-600 shadow-none hover:shadow-sm;
+  }
+
+  .btn-danger {
+    @apply font-semibold bg-rose-50 text-rose-600 border border-rose-200 px-5 py-2.5 rounded-xl transition-all duration-300 hover:bg-rose-100 shadow-sm hover:shadow-md;
+  }
+  .dark .btn-danger {
+    @apply bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500 hover:text-white hover:shadow-[0_0_15px_rgba(225,29,72,0.4)];
+  }
+
+  .btn-success {
+    @apply font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 px-5 py-2.5 rounded-xl transition-all duration-300 hover:bg-emerald-100 shadow-sm hover:shadow-md;
+  }
+  .dark .btn-success {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)];
+  }
+
+  /* Stat Card Specifics used in Dashboard */
+  .stat-card {
+    @apply flex flex-col p-5 bg-surface-light border border-borderc-light rounded-xl shadow-sm transition-colors;
+  }
+  .dark .stat-card {
+    @apply bg-surface-dark border-borderc-dark shadow-none hover:border-bitcoin-500/30 hover:bg-[#12151b];
+  }
+
+  /* Identity Displays */
+  .hash-display {
+    @apply font-mono text-[11px] sm:text-xs text-slate-600 break-all bg-slate-100 px-3 py-2 rounded-lg border border-slate-200;
+  }
+  .dark .hash-display {
+    @apply text-slate-400 bg-black/30 border-white/5;
+  }
+
+  /* Status Badges */
+  .badge-pending {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-amber-100 text-amber-700 border border-amber-200;
+  }
+  .dark .badge-pending {
+    @apply bg-amber-500/10 text-amber-400 border-amber-500/30;
+  }
+  
+  .badge-active {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-bitcoin-50 text-bitcoin-600 border border-bitcoin-200;
+  }
+  .dark .badge-active {
+    @apply bg-bitcoin-500/10 text-bitcoin-400 border-bitcoin-500/30;
+  }
+
+  .badge-repaid {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-200;
+  }
+  .dark .badge-repaid {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/30;
+  }
+
+  .badge-defaulted {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-rose-50 text-rose-600 border border-rose-200;
+  }
+  .dark .badge-defaulted {
+    @apply bg-rose-500/10 text-rose-400 border-rose-500/30;
+  }
+}
