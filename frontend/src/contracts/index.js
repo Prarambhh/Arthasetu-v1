@@ -69,6 +69,14 @@ export function bytes32ToUuid(b32) {
 }
 
 /**
+ * Alias: Convert a UUID string back to the deterministic bytes32 used on-chain.
+ * Inverse of bytes32ToUuid.
+ */
+export function uuidToBytes32(uuid) {
+  return loanIdToBytes32(uuid);
+}
+
+/**
  * Truncate a bytes32 for display (e.g. "0xabcd…1234")
  */
 export function formatBytes32(b32) {

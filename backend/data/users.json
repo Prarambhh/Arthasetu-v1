@@ -23,7 +23,7 @@
     "username": "bob_lender",
     "walletAddress": "0xf8950cc6a551f257764339fefa8e281fee6aaa68",
     "publicKey": "04cc24c23067fe3dec677476271e26853c65d0edc76278e72703fed1780af6c2c68e7e9b0c80a58417c10b99475ee16b34ad24f8914f69c8bdeef9f4d9920ea3c7",
-    "nonce": "24dd137d-3d81-4980-ad5a-bc75a127df3c",
+    "nonce": "c6c68313-d612-42df-8790-0b8114716a0a",
     "creditScore": 50,
     "trustTier": "MODERATE",
     "loanHistory": [
@@ -41,7 +41,7 @@
     "username": "charlie_risk",
     "walletAddress": "0x006afe24f09450f7c0336b71268628d871e37d6c",
     "publicKey": "044efe2117ca920ec9dd2050efd3ba635b0fc25aef71854361efc7c11335d168e501d5192e932d2a69172b46b3cae14e6300e5e75d9b707e3044e4dc953e6f87a6",
-    "nonce": "b3059fe0-d8a0-435c-b95f-b2fc5d36a7b5",
+    "nonce": "b883ff79-b2f8-488c-a5b6-65a95136e676",
     "creditScore": 35,
     "trustTier": "MODERATE",
     "loanHistory": [

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWeb3 } from '../context/Web3Context';
 import { useOnChainLoans } from '../utils/useContractEvents';
 import { formatAUSD, formatBytes32, ON_CHAIN_STATUS, PROTOCOL_ADDRESS, parseAUSD, bytes32ToUuid } from '../contracts';
-import { getLoanDetail, uploadDocument, hybridApprove, triggerReview, addBorrowerGuarantor, approveGuarantor as apiApproveGuarantor, rejectGuarantor as apiRejectGuarantor, getAllUsers } from '../api';
+import { getLoanDetail, uploadDocument, hybridApprove, markLoanStatus, triggerReview, addBorrowerGuarantor, approveGuarantor as apiApproveGuarantor, rejectGuarantor as apiRejectGuarantor, getAllUsers } from '../api';
 import { ethers } from 'ethers';
 import { Loader, AlertCircle, CheckCircle, ShieldCheck, Lock, ExternalLink, Wallet, Zap, Eye, Upload, UserPlus, Users, X, ArrowRight, Clock, XCircle, FileText } from 'lucide-react';
 
@@ -169,6 +169,10 @@ export default function LoanDetail() {
       }
       const tx = await loansContract.fundAndDisburse(id, rateBps);
       const receipt = await tx.wait();
+      
+      const standardUuid = bytes32ToUuid(id);
+      await markLoanStatus(standardUuid, 'disbursed').catch(console.error);
+
       setActionSuccess({ type: 'funded', txHash: receipt.hash, blockNumber: receipt.blockNumber });
       await refreshBalance();
       await fetchLoan();
@@ -193,6 +197,16 @@ export default function LoanDetail() {
       }
       const tx = await loansContract.repayLoan(id, amountWei);
       const receipt = await tx.wait();
+
+      const standardUuid = bytes32ToUuid(id);
+      // Wait to see if off-chain status needs updating to settled
+      // The contract clears loan status to 5 when fully repaid
+      const loanData = await loansContract.loans(id);
+      const remaining = loanData.outstandingPrincipal;
+      if (remaining <= 0n) {
+        await markLoanStatus(standardUuid, 'settled').catch(console.error);
+      }
+
       setActionSuccess({ type: 'repaid', txHash: receipt.hash, blockNumber: receipt.blockNumber });
       await refreshBalance();
       await fetchLoan();

@@ -6,17 +6,17 @@ async function main() {
   const ausd = await MockAUSD.deploy();
   await ausd.waitForDeployment();
   const ausdAddress = await ausd.getAddress();
-  console.log(`MockAUSD deployed to: ${ausdAddress}`);
+  console.log(`✅ MockAUSD deployed to: ${ausdAddress}`);
 
   console.log("Deploying ArthaSetuLoans protocol...");
   const ArthaSetuLoans = await ethers.getContractFactory("ArthaSetuLoans");
   const loans = await ArthaSetuLoans.deploy(ausdAddress);
   await loans.waitForDeployment();
   const loansAddress = await loans.getAddress();
-  console.log(`ArthaSetuLoans deployed to: ${loansAddress}`);
+  console.log(`✅ ArthaSetuLoans deployed to: ${loansAddress}`);
 
   console.log("\n=================================");
-  console.log("Deployment Complete!");
+  console.log("🚀 Deployment Complete!");
   console.log(`AUSD_ADDRESS=${ausdAddress}`);
   console.log(`PROTOCOL_ADDRESS=${loansAddress}`);
   console.log("=================================\n");

@@ -24,7 +24,25 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   try {
     const payload = jwt.verify(token, JWT_SECRET) as { userId: string; id?: string };
     // Support both legacy (id) and new (userId) JWT payloads
-    req.userId = payload.userId || payload.id;
+    const uid = payload.userId || payload.id;
+    req.userId = uid;
+    
+    // Auto-upsert to bypass missing user Foreign Key Constraints
+    if (uid) {
+      import('../db').then(({ default: db }) => {
+        const { UserStore } = require('../../models/UserStore');
+        const legacyUser = UserStore.findById(uid);
+        if (legacyUser) {
+          db('users').insert({
+            id: uid,
+            name: legacyUser.username,
+            email: `${legacyUser.username}@arthasetu.app`,
+            hashed_password: 'legacy_wallet_auth'
+          }).onConflict('id').ignore().catch(() => {});
+        }
+      }).catch(() => {});
+    }
+    
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });

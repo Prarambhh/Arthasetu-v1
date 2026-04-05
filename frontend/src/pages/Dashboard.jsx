@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWeb3 } from '../context/Web3Context';
 import { useOnChainLoans } from '../utils/useContractEvents';
-import { formatAUSD, formatBytes32, ON_CHAIN_STATUS } from '../contracts';
+import { formatAUSD, formatBytes32, ON_CHAIN_STATUS, uuidToBytes32 } from '../contracts';
+import { getMyAccessibleLoans } from '../api';
 import { ethers } from 'ethers';
 import { TrendingUp, TrendingDown, Clock, CheckCircle, AlertTriangle, Wallet, ArrowRight, ShieldCheck, FileText, Banknote, Loader, ExternalLink, Zap } from 'lucide-react';
 
@@ -32,8 +33,10 @@ function TimelineConnector() {
 
 function OnChainLoanMiniCard({ loan, currentAccount }) {
   const isBorrower = loan.borrower?.toLowerCase() === currentAccount?.toLowerCase();
-  const isLender = loan.lender?.toLowerCase() === currentAccount?.toLowerCase();
+  // isLender: check both on-chain lender AND off-chain lender flag
+  const isLender = loan.lender?.toLowerCase() === currentAccount?.toLowerCase() || loan.isOffchainLender;
   const amount = formatAUSD(loan.principalAmount);
+  const offchainStatus = loan.offchainStatus;
   const statusColor = {
     REQUESTED: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/20',
     DISBURSED: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
@@ -51,9 +54,16 @@ function OnChainLoanMiniCard({ loan, currentAccount }) {
             {isLender && <span className="text-[9px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20">Lender</span>}
           </div>
         </div>
-        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusColor[loan.statusLabel] || statusColor.REQUESTED}`}>
-          {loan.statusLabel}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusColor[loan.statusLabel] || statusColor.REQUESTED}`}>
+            {loan.statusLabel}
+          </span>
+          {offchainStatus && offchainStatus !== 'requested' && (
+            <span className="text-[9px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-200 dark:border-violet-500/20">
+              {offchainStatus.replace(/_/g, ' ')}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex justify-between items-center text-xs">
         <span className="font-mono text-[10px] text-slate-400">{formatBytes32(loan.loanId)}</span>
@@ -71,10 +81,55 @@ export default function Dashboard() {
   const { account, ausdBalance, connectWallet, connecting } = useWeb3();
   const { loans, loading, refresh } = useOnChainLoans();
 
-  // Filter loans by current account involvement
-  const myLoans = loans.filter(l =>
+  // Off-chain loans where this user is the lender (accepted but not yet funded on-chain)
+  const [offchainLenderLoanIds, setOffchainLenderLoanIds] = useState(new Set());
+  const [offchainStatusMap, setOffchainStatusMap] = useState({});
+  const [offchainLoading, setOffchainLoading] = useState(false);
+
+  const fetchOffchainLoans = useCallback(async () => {
+    if (!user?.userId) return;
+    setOffchainLoading(true);
+    try {
+      const resp = await getMyAccessibleLoans();
+      const offchainLoans = resp.data?.data || [];
+      const lenderIds = new Set();
+      const statusMap = {};
+      offchainLoans.forEach(ol => {
+        if (ol.lender_id === user.userId) {
+          // Convert UUID back to bytes32 to match on-chain loanId
+          const bytes32Id = uuidToBytes32(ol.id);
+          lenderIds.add(bytes32Id.toLowerCase());
+          statusMap[bytes32Id.toLowerCase()] = ol.status;
+        }
+        // Also track status for borrower's own loans
+        if (ol.borrower_id === user.userId) {
+          const bytes32Id = uuidToBytes32(ol.id);
+          statusMap[bytes32Id.toLowerCase()] = ol.status;
+        }
+      });
+      setOffchainLenderLoanIds(lenderIds);
+      setOffchainStatusMap(statusMap);
+    } catch (e) {
+      console.warn('Could not fetch off-chain loans:', e);
+    } finally {
+      setOffchainLoading(false);
+    }
+  }, [user?.userId]);
+
+  useEffect(() => { fetchOffchainLoans(); }, [fetchOffchainLoans]);
+
+  // Enrich on-chain loans with off-chain status and lender info
+  const enrichedLoans = loans.map(l => ({
+    ...l,
+    isOffchainLender: offchainLenderLoanIds.has(l.loanId?.toLowerCase()),
+    offchainStatus: offchainStatusMap[l.loanId?.toLowerCase()],
+  }));
+
+  // Filter loans by current account involvement (on-chain OR off-chain lender)
+  const myLoans = enrichedLoans.filter(l =>
     l.borrower?.toLowerCase() === account?.toLowerCase() ||
-    l.lender?.toLowerCase() === account?.toLowerCase()
+    l.lender?.toLowerCase() === account?.toLowerCase() ||
+    l.isOffchainLender
   );
 
   const requestedLoans = myLoans.filter(l => l.status === 0); // REQUESTED
@@ -85,7 +140,7 @@ export default function Dashboard() {
 
   const filteredLoans = myLoans.filter(loan => {
     const isBorrower = loan.borrower?.toLowerCase() === account?.toLowerCase();
-    const isLender = loan.lender?.toLowerCase() === account?.toLowerCase();
+    const isLender = loan.lender?.toLowerCase() === account?.toLowerCase() || loan.isOffchainLender;
     if (activeFilter === 'borrowing') return isBorrower;
     if (activeFilter === 'lending') return isLender;
     return true;

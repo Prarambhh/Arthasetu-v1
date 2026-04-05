@@ -23,7 +23,8 @@ export const getUserProfile = (userId) => API.get(`/user/profile/${userId}`);
 export const getAllUsers = () => API.get('/user/all');
 
 // ── Loans v2 ─────────────────────────────────────────────────────────────
-export const getMyRequests = () => API.get('/api/v2/loans/me'); // Needs to be written if not exist, or mapped. We can use /api/v2/contracts instead for dashboard.
+export const getMyRequests = () => API.get('/api/v2/loans/me');
+export const getMyAccessibleLoans = () => API.get('/api/v2/loans/me');
 export const getPendingBroadcasts = () => API.get('/api/v2/loans/pending');
 export const createLoan = (amount) => API.post('/api/v2/loans', { amount });
 export const acceptLoan = (loanId, interestRate) => API.post(`/api/v2/loans/${loanId}/accept`, { interestRate });
@@ -45,6 +46,7 @@ export const rejectLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/reject`)
 export const getLoanDetail = (loanId) => API.get(`/api/v2/loans/${loanId}`);
 export const syncOnChainLoan = (id, amount) => API.post('/api/v2/loans/sync', { id, amount });
 export const hybridApprove = (loanId, interestRate) => API.post(`/api/v2/loans/${loanId}/hybrid-approve`, { interestRate });
+export const markLoanStatus = (loanId, status) => API.post(`/api/v2/loans/${loanId}/mark-status`, { status });
 export const repayLoan = (loanId, amount) => API.post(`/api/v2/loans/${loanId}/repay`, { amount }); // V2 Backend Implementation Required
 
 // ── Guarantors v2 ────────────────────────────────────────────────────────

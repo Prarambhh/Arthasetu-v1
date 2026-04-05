@@ -4,7 +4,7 @@ import { LoanStateMachine } from '../domain/LoanStateMachine';
 import { LoanRepository } from '../repositories/LoanRepository';
 import { GuarantorRepository } from '../repositories/GuarantorRepository';
 import { DisbursementService } from './DisbursementService';
-import { PreconditionNotMetError, InvalidStateTransitionError } from '../domain/errors';
+import { PreconditionNotMetError, InvalidStateTransitionError, DomainError } from '../domain/errors';
 
 export class LoanLifecycleService {
   constructor(
@@ -45,14 +45,14 @@ export class LoanLifecycleService {
   }
 
   async acceptApplication(loanId: string, lenderId: string, interestRate: number) {
-    if (isNaN(interestRate) || interestRate < 1 || interestRate > 15) {
-      throw new PreconditionNotMetError('Interest rate must be between 1 and 15 percent');
+    if (isNaN(interestRate) || interestRate < 0 || interestRate > 20) {
+      throw new PreconditionNotMetError('Interest rate must be between 0 and 20 percent');
     }
 
     const loan = await this.loanRepo.findById(loanId);
-    if (!loan) throw new Error('Loan not found');
-    if (loan.lender_id) throw new Error('Loan has already been accepted by another lender');
-    if (loan.borrower_id === lenderId) throw new Error('Borrower cannot accept their own loan request');
+    if (!loan) throw new DomainError('Loan not found');
+    if (loan.lender_id) throw new DomainError('Loan has already been accepted by another lender');
+    if (loan.borrower_id === lenderId) throw new DomainError('Borrower cannot accept their own loan request');
 
     // Proceed to set the lender, loan stays in "requested" until docs are requested
     await this.db('loans').where({ id: loanId }).update({ 
