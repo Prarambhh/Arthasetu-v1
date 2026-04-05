@@ -45,6 +45,7 @@ export interface Loan {
   borrower_id: string;
   lender_id?: string;
   amount: number | string;
+  interest_rate?: number | string;
   status: LoanStatus;
   requested_at: Date;
   updated_at: Date;
@@ -90,7 +91,9 @@ export interface Contract {
   borrower_id: string;
   lender_id?: string;
   amount: number | string;
+  outstanding_principal: number | string;
   status: ContractStatus;
   issued_at: Date;
+  last_payment_at: Date;
   settled_at?: Date;
 }

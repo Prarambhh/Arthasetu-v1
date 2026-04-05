@@ -26,7 +26,7 @@ export const getAllUsers = () => API.get('/user/all');
 export const getMyRequests = () => API.get('/api/v2/loans/me'); // Needs to be written if not exist, or mapped. We can use /api/v2/contracts instead for dashboard.
 export const getPendingBroadcasts = () => API.get('/api/v2/loans/pending');
 export const createLoan = (amount) => API.post('/api/v2/loans', { amount });
-export const acceptLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/accept`);
+export const acceptLoan = (loanId, interestRate) => API.post(`/api/v2/loans/${loanId}/accept`, { interestRate });
 export const addRequirements = (loanId, requirements) => API.post(`/api/v2/loans/${loanId}/requirements`, { requirements });
 export const uploadDocument = (loanId, requirementId, fileReference) => API.post(`/api/v2/loans/${loanId}/documents`, { requirementId, fileReference });
 export const triggerReview = (loanId) => API.post(`/api/v2/loans/${loanId}/review`);

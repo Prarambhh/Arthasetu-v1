@@ -42,11 +42,11 @@ export default function Lend() {
     return true;
   });
 
-  const handleFund = async (loanId) => {
+  const handleFund = async (loanId, interestRate) => {
     setFunding(loanId);
     setError('');
     try {
-      await acceptLoan(loanId);
+      await acceptLoan(loanId, interestRate);
       const res = await getPendingBroadcasts();
       const mapped = res.data.data.map(l => ({ ...l, loanId: l.id, borrowerId: l.borrower_id, createdAt: l.requested_at, status: l.status.toUpperCase() }));
       setLoans(mapped);

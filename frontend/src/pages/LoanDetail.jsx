@@ -7,9 +7,12 @@ import {
   uploadDocument, 
   triggerReview, 
   approveLoan, 
-  rejectLoan 
+  rejectLoan,
+  getMyGuarantorRecord,
+  approveGuarantor,
+  rejectGuarantor
 } from '../api';
-import { Loader, AlertCircle, CheckCircle, FileText, ShieldCheck, ChevronRight, UploadCloud, Lock } from 'lucide-react';
+import { Loader, AlertCircle, CheckCircle, FileText, ShieldCheck, ChevronRight, UploadCloud, Lock, HandshakeIcon, XCircle } from 'lucide-react';
 import { LoanStatusBadge } from '../components/TrustTierBadge';
 
 export default function LoanDetail() {
@@ -25,8 +28,10 @@ export default function LoanDetail() {
   // Forms
   const [reqLabel, setReqLabel] = useState('');
   const [reqType, setReqType] = useState('document');
+  const [reqGuarantorUserId, setReqGuarantorUserId] = useState('');
   const [uploadLinks, setUploadLinks] = useState({});
   const [selectedFiles, setSelectedFiles] = useState({});
+  const [myGuarantorRecord, setMyGuarantorRecord] = useState(null);
 
   useEffect(() => {
     fetchDetail();
@@ -37,6 +42,13 @@ export default function LoanDetail() {
       setLoading(true);
       const res = await getLoanDetail(id);
       setData(res.data.data);
+      // Check if current user is a guarantor on this loan
+      try {
+        const gr = await getMyGuarantorRecord(id);
+        setMyGuarantorRecord(gr.data.data);
+      } catch {
+        setMyGuarantorRecord(null); // not a guarantor
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch deal room');
     } finally {
@@ -53,12 +65,50 @@ export default function LoanDetail() {
   const handleAddReq = async (e) => {
     e.preventDefault();
     setActionLoading(true);
+    setError('');
     try {
-      await addRequirements(id, [{ type: reqType, label: reqLabel }]);
+      const req = { type: reqType, label: reqLabel };
+      if (reqType === 'guarantors') {
+        if (!reqGuarantorUserId.trim()) {
+          setError('Please enter the Guarantor\'s User ID');
+          setActionLoading(false);
+          return;
+        }
+        req.userId = reqGuarantorUserId.trim();
+      }
+      await addRequirements(id, [req]);
       setReqLabel('');
+      setReqGuarantorUserId('');
       await fetchDetail();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add requirement');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleGuarantorApprove = async () => {
+    setActionLoading(true);
+    setError('');
+    try {
+      await approveGuarantor(id);
+      await fetchDetail();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to approve guarantor request');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleGuarantorReject = async () => {
+    if (!window.confirm('Are you sure you want to decline being a guarantor on this loan?')) return;
+    setActionLoading(true);
+    setError('');
+    try {
+      await rejectGuarantor(id);
+      await fetchDetail();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to decline guarantor request');
     } finally {
       setActionLoading(false);
     }
@@ -174,24 +224,89 @@ export default function LoanDetail() {
           </div>
         )}
 
+        {/* ── GUARANTOR CONSENT PANEL ── */}
+        {myGuarantorRecord && (
+          <div className={`dashboard-card p-6 border-l-4 ${
+            myGuarantorRecord.status === 'approved'
+              ? 'border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-900/10'
+              : myGuarantorRecord.status === 'rejected'
+              ? 'border-l-rose-500 bg-rose-50/30 dark:bg-rose-900/10'
+              : 'border-l-amber-500 bg-amber-50/30 dark:bg-amber-900/10'
+          }`}>
+            <div className="flex items-start gap-3">
+              <ShieldCheck className={`w-6 h-6 shrink-0 mt-0.5 ${
+                myGuarantorRecord.status === 'approved' ? 'text-emerald-500'
+                : myGuarantorRecord.status === 'rejected' ? 'text-rose-500'
+                : 'text-amber-500'
+              }`} />
+              <div className="flex-1">
+                <h3 className="font-bold text-slate-900 dark:text-slate-100">
+                  {myGuarantorRecord.status === 'approved' ? 'You are a confirmed Guarantor'
+                  : myGuarantorRecord.status === 'rejected' ? 'You declined this guarantee'
+                  : 'Guarantor Consent Request'}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  {myGuarantorRecord.status === 'approved'
+                    ? 'You have accepted responsibility as a guarantor on this loan. If the borrower defaults, you may be liable for repayment.'
+                    : myGuarantorRecord.status === 'rejected'
+                    ? 'You declined to be a guarantor on this loan.'
+                    : 'The lender has nominated you as a guarantor for this loan. By accepting, you take responsibility to ensure the borrower repays. Your acceptance is required before funds are disbursed.'}
+                </p>
+                {myGuarantorRecord.status === 'pending' && (
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={handleGuarantorApprove}
+                      disabled={actionLoading}
+                      className="btn-success flex-1 flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" /> Accept Guarantee
+                    </button>
+                    <button
+                      onClick={handleGuarantorReject}
+                      disabled={actionLoading}
+                      className="btn-secondary text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100 flex-1 flex items-center justify-center gap-2"
+                    >
+                      <XCircle className="w-4 h-4" /> Decline
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── LENDER WANTS DOCUMENTS (REQUESTED / DOCS_REQUESTED) ── */}
         {isLender && (status === 'requested' || status === 'docs_requested') && (
           <div className="dashboard-card p-6">
             <h2 className="text-lg font-bold mb-4">Request Evidence</h2>
-            <form onSubmit={handleAddReq} className="flex gap-3">
-              <select 
-                value={reqType} onChange={e=>setReqType(e.target.value)}
-                className="input py-2 flex-1 max-w-[150px]"
-              >
-                <option value="document">Document</option>
-                <option value="guarantor">Guarantor</option>
-              </select>
-              <input 
-                className="input py-2 flex-1" 
-                placeholder="e.g. Identity Proof URL or User ID" 
-                value={reqLabel} onChange={e=>setReqLabel(e.target.value)} required
-              />
-              <button disabled={actionLoading} type="submit" className="btn-secondary whitespace-nowrap">Add</button>
+            <form onSubmit={handleAddReq} className="space-y-3">
+              <div className="flex gap-3">
+                <select 
+                  value={reqType} onChange={e => { setReqType(e.target.value); setReqGuarantorUserId(''); }}
+                  className="input py-2 flex-1 max-w-[160px]"
+                >
+                  <option value="document">Document</option>
+                  <option value="guarantors">Guarantor</option>
+                </select>
+                <input 
+                  className="input py-2 flex-1" 
+                  placeholder={reqType === 'guarantors' ? 'Guarantor name / description' : 'e.g. Identity Proof, Bank Statement'}
+                  value={reqLabel} onChange={e => setReqLabel(e.target.value)} required
+                />
+                <button disabled={actionLoading} type="submit" className="btn-secondary whitespace-nowrap">Add</button>
+              </div>
+              {reqType === 'guarantors' && (
+                <div className="flex gap-3 items-center p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+                  <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <input
+                    className="input py-2 flex-1 text-sm"
+                    placeholder="Guarantor's User ID (from their profile)"
+                    value={reqGuarantorUserId}
+                    onChange={e => setReqGuarantorUserId(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
             </form>
 
             <div className="mt-6 flex justify-end">
@@ -262,6 +377,8 @@ export default function LoanDetail() {
                              <UploadCloud className="w-4 h-4" />
                            </button>
                          </div>
+                       ) : req.fulfilled ? (
+                         <div className="text-xs text-right text-emerald-500 font-bold tracking-wider uppercase">Fulfilled</div>
                        ) : (
                          <div className="text-xs text-right text-slate-400 font-medium">Pending</div>
                        )}

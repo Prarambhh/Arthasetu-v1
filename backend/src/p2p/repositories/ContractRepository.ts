@@ -10,6 +10,7 @@ export class ContractRepository {
       borrower_id: string;
       lender_id: string;
       amount: number;
+      outstanding_principal: number;
       status: ContractStatus;
     },
     trx: Knex.Transaction
@@ -20,10 +21,11 @@ export class ContractRepository {
         borrower_id: data.borrower_id,
         lender_id: data.lender_id,
         amount: data.amount,
+        outstanding_principal: data.outstanding_principal,
         status: data.status,
       })
       .onConflict('loan_id')
-      .merge(['status'])
+      .merge(['status', 'outstanding_principal', 'last_payment_at'])
       .returning('*');
     return contract as Contract;
   }
@@ -91,6 +93,15 @@ export class ContractRepository {
   async settle(loanId: string, trx: Knex.Transaction): Promise<void> {
     await trx('contracts')
       .where({ loan_id: loanId })
-      .update({ status: ContractStatus.SETTLED, settled_at: new Date() });
+      .update({ status: ContractStatus.SETTLED, settled_at: new Date(), outstanding_principal: 0 });
+  }
+
+  async updatePrincipal(loanId: string, newPrincipal: number, trx: Knex.Transaction): Promise<void> {
+    await trx('contracts')
+      .where({ loan_id: loanId })
+      .update({ 
+        outstanding_principal: newPrincipal, 
+        last_payment_at: new Date() 
+      });
   }
 }

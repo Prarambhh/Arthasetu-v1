@@ -35,7 +35,8 @@ export class LoanController {
   accept = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const loanId = this.loanId(req);
-      const result = await this.lifecycleService.acceptApplication(loanId, this.uid(req));
+      const { interestRate } = req.body;
+      const result = await this.lifecycleService.acceptApplication(loanId, this.uid(req), Number(interestRate));
       res.json({ data: result });
     } catch (err) { next(err); }
   };
@@ -57,14 +58,38 @@ export class LoanController {
             res.status(400).json({ error: 'userId required for guarantor type requirement' });
             return;
           }
-          await this.guarantorService.addGuarantor(loanId, r.userId);
+          
+          let targetUserId = r.userId.trim();
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          
+          if (!uuidRegex.test(targetUserId)) {
+            // Not a UUID. Try resolving as username first
+            let user = await db('users').whereRaw('LOWER(name) = LOWER(?)', targetUserId).first();
+            if (user) {
+              targetUserId = user.id;
+            } else if (targetUserId.startsWith('0x')) {
+              // Try legacy wallet address resolution
+              const { UserStore } = require('../../models/UserStore');
+              const legacyUser = UserStore.findByWallet(targetUserId);
+              if (legacyUser) {
+                targetUserId = legacyUser.userId;
+              }
+            }
+          }
+
+          if (!uuidRegex.test(targetUserId)) {
+             res.status(400).json({ error: 'Guarantor must be a valid User ID, Username, or Wallet Address.' });
+             return;
+          }
+
+          await this.guarantorService.addGuarantor(loanId, targetUserId);
         }
       }
 
       const created = await this.lifecycleService.addRequirements(
-        loanId,
-        this.uid(req),
-        requirements.map((r) => ({ type: r.type as any, label: r.label }))
+         loanId,
+         this.uid(req),
+         requirements.map((r) => ({ type: r.type as any, label: r.label }))
       );
       res.status(201).json({ data: created });
     } catch (err) { next(err); }

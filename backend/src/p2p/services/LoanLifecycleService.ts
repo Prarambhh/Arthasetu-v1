@@ -22,16 +22,24 @@ export class LoanLifecycleService {
     });
   }
 
-  async acceptApplication(loanId: string, lenderId: string) {
+  async acceptApplication(loanId: string, lenderId: string, interestRate: number) {
+    if (isNaN(interestRate) || interestRate < 1 || interestRate > 15) {
+      throw new PreconditionNotMetError('Interest rate must be between 1 and 15 percent');
+    }
+
     const loan = await this.loanRepo.findById(loanId);
     if (!loan) throw new Error('Loan not found');
     if (loan.lender_id) throw new Error('Loan has already been accepted by another lender');
     if (loan.borrower_id === lenderId) throw new Error('Borrower cannot accept their own loan request');
 
     // Proceed to set the lender, loan stays in "requested" until docs are requested
-    await this.db('loans').where({ id: loanId }).update({ lender_id: lenderId, updated_at: new Date() });
+    await this.db('loans').where({ id: loanId }).update({ 
+      lender_id: lenderId, 
+      interest_rate: interestRate,
+      updated_at: new Date() 
+    });
     
-    return { ...loan, lender_id: lenderId };
+    return { ...loan, lender_id: lenderId, interest_rate: interestRate };
   }
 
   async addRequirements(
@@ -43,8 +51,11 @@ export class LoanLifecycleService {
     if (!loan) throw new Error('Loan not found');
     if (loan.lender_id !== lenderId) throw new Error('Only the lender may add requirements');
 
-    // Transition: requested → docs_requested
-    LoanStateMachine.assertTransition(loan.status, LoanStatus.DOCS_REQUESTED);
+    // Transition: requested → docs_requested (only if not already there)
+    if (loan.status !== LoanStatus.DOCS_REQUESTED) {
+      LoanStateMachine.assertTransition(loan.status, LoanStatus.DOCS_REQUESTED);
+      await this.loanRepo.updateStatus(loanId, LoanStatus.DOCS_REQUESTED);
+    }
 
     const created = [];
     for (const req of requirements) {
@@ -52,7 +63,6 @@ export class LoanLifecycleService {
       created.push(r);
     }
 
-    await this.loanRepo.updateStatus(loanId, LoanStatus.DOCS_REQUESTED);
     return created;
   }
 
@@ -131,15 +141,20 @@ export class LoanLifecycleService {
     if (!loan) throw new PreconditionNotMetError('Loan not found');
     if (loan.borrower_id !== borrowerId) throw new PreconditionNotMetError('Only the borrower may repay');
 
-    const loanAmount = parseFloat(String(loan.amount));
-    if (Math.abs(loanAmount - amount) > 0.01) {
-      throw new PreconditionNotMetError(`Repayment must be for the full outstanding principal of ${loanAmount}`);
+    if (amount <= 0) {
+      throw new PreconditionNotMetError('Repayment amount must be strictly greater than 0');
     }
 
     LoanStateMachine.assertTransition(loan.status, LoanStatus.SETTLED);
     
-    // Atomic settlement
-    const settleResult = await this.disbursementService.settle(loanId, loanAmount);
-    return { status: LoanStatus.SETTLED, walletTransactionId: settleResult.walletTransactionId };
+    // Partial payment handling is now offloaded directly to the settlement service
+    const settleResult = await this.disbursementService.settle(loanId, amount);
+    
+    // disbursementService.settle will return the resulting loan status depending on if it's fully settled yet
+    if (settleResult.status === LoanStatus.SETTLED) {
+      await this.loanRepo.updateStatus(loanId, LoanStatus.SETTLED);
+    }
+    
+    return settleResult;
   }
 }

@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { formatAddress } from '../utils/wallet';
 import {
   LayoutDashboard, TrendingDown, TrendingUp, RotateCcw,
-  Blocks, Users, LogOut, Menu, X, Landmark, Sun, Moon
+  Blocks, Users, LogOut, Menu, X, Landmark, Sun, Moon, Wallet
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -15,6 +15,7 @@ const navLinks = [
   { to: '/repay',     label: 'Repay',     icon: RotateCcw },
   { to: '/explorer',  label: 'Explorer',  icon: Blocks },
   { to: '/community', label: 'Community', icon: Users },
+  { to: '/wallet',    label: 'Wallet',    icon: Wallet },
 ];
 
 export function Navbar() {

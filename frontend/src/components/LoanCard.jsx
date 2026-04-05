@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TrustTierBadge, LoanStatusBadge } from './TrustTierBadge';
 
@@ -34,6 +35,9 @@ function ProgressBar({ repaid, total, status }) {
 export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
   const isBorrower = loan.borrowerId === currentUserId;
   const isLender = loan.lenderId === currentUserId;
+  const isGuarantor = !isBorrower && !isLender && !!currentUserId && loan.status !== 'REQUESTED';
+  const canOpenDealRoom = isBorrower || isLender || isGuarantor;
+  const [interestRate, setInterestRate] = useState(10); // Default to 10%
 
   return (
     <div className="dashboard-card card-hover p-6 flex flex-col gap-5">
@@ -100,12 +104,28 @@ export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
 
       {/* Actions */}
       {loan.status === 'REQUESTED' && !isBorrower && onFund && (
-        <button
-          onClick={() => onFund(loan.loanId)}
-          className="btn-primary w-full mt-2 border border-bitcoin-600 hover:shadow-glow-orange dark:border-transparent transition-all"
-        >
-          Accept Application
-        </button>
+        <div className="mt-2 space-y-3">
+          <div className="bg-slate-50 dark:bg-surface-900 border border-slate-200 dark:border-surface-800 rounded-lg p-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Interest Rate (%)</label>
+            <div className="flex items-center gap-2">
+              <input 
+                type="number" 
+                min="1" 
+                max="15" 
+                value={interestRate} 
+                onChange={(e) => setInterestRate(e.target.value)}
+                className="flex-1 bg-white dark:bg-surface-950 border border-slate-300 dark:border-surface-700 text-slate-900 dark:text-slate-100 rounded-md px-3 py-1.5 text-sm font-semibold outline-none focus:border-bitcoin-500 transition-all"
+              />
+              <span className="text-sm font-semibold text-slate-400">% APR</span>
+            </div>
+          </div>
+          <button
+            onClick={() => onFund(loan.loanId, interestRate)}
+            className="btn-primary w-full border border-bitcoin-600 hover:shadow-glow-orange dark:border-transparent transition-all"
+          >
+            Accept Application
+          </button>
+        </div>
       )}
       {loan.status === 'ACTIVE' && isBorrower && onRepay && (
         <button
@@ -115,7 +135,7 @@ export function LoanCard({ loan, onFund, onRepay, currentUserId }) {
           Make Repayment
         </button>
       )}
-      {(isBorrower || isLender) && (
+      {canOpenDealRoom && (
         <Link 
           to={`/loan/${loan.loanId}`}
           className="btn-secondary w-full mt-2 text-center block"

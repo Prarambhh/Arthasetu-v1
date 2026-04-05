@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [loans, setLoans] = useState([]);
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     Promise.all([getMyRequests(), getContracts(), getHealth(), refreshUser()])
@@ -74,10 +75,10 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const myLoans = loans.filter(l => l.borrowerId === user?.userId || l.lenderId === user?.userId);
-  const activeLoans = myLoans.filter(l => l.status === 'ACTIVE');
+  const myLoans = loans; // /api/v2/loans/me already returns only accessible loans (borrower, lender, or guarantor)
+  const activeLoans = myLoans.filter(l => l.status === 'ACTIVE' || l.status === 'DISBURSED');
   const pendingLoans = myLoans.filter(l => ['PENDING', 'REQUESTED', 'DOCS_REQUESTED', 'UNDER_REVIEW', 'APPROVED'].includes(l.status));
-  const repaidLoans = myLoans.filter(l => l.status === 'REPAID');
+  const repaidLoans = myLoans.filter(l => l.status === 'REPAID' || l.status === 'SETTLED');
 
   if (loading) return (
     <div className="min-h-screen bg-surface-light_alt dark:bg-surface-dark_alt flex items-center justify-center pt-20">
@@ -169,10 +170,36 @@ export default function Dashboard() {
 
             {/* My Loans */}
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 tracking-tight">Active Operations</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Active Operations</h2>
+                
+                <div className="flex bg-slate-100 dark:bg-surface-900 p-1 rounded-lg self-start sm:self-auto overflow-x-auto max-w-full hide-scrollbar">
+                  {['all', 'assets', 'borrowing', 'guarantor'].map(filter => (
+                    <button
+                      key={filter}
+                      onClick={() => setActiveFilter(filter)}
+                      className={`px-4 py-1.5 text-xs font-bold rounded-md capitalize whitespace-nowrap transition-all ${
+                        activeFilter === filter 
+                          ? 'bg-white dark:bg-surface-800 text-slate-900 dark:text-slate-100 shadow-sm' 
+                          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                      }`}
+                    >
+                      {filter === 'assets' ? 'Your Assets' : filter === 'borrowing' ? 'Your Borrowing' : filter}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
               {myLoans.length > 0 ? (
                 <div className="grid sm:grid-cols-2 gap-5">
-                  {myLoans.map(loan => (
+                  {myLoans.filter(loan => {
+                    const isBorrower = loan.borrowerId === user?.userId;
+                    const isLender = loan.lenderId === user?.userId;
+                    if (activeFilter === 'assets') return isLender;
+                    if (activeFilter === 'borrowing') return isBorrower;
+                    if (activeFilter === 'guarantor') return !isLender && !isBorrower;
+                    return true;
+                  }).map(loan => (
                     <LoanCard key={loan.loanId} loan={loan} currentUserId={user?.userId} />
                   ))}
                 </div>

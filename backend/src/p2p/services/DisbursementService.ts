@@ -98,6 +98,7 @@ export class DisbursementService {
           borrower_id: loan.borrower_id,
           lender_id: loan.lender_id,
           amount: loanAmount,
+          outstanding_principal: loanAmount,
           status: ContractStatus.PENDING,
         },
         trx
@@ -108,26 +109,19 @@ export class DisbursementService {
   }
 
   /**
-   * Atomic settlement — reverses the funds from borrower to lender.
+   * Atomic settlement / Repayment — processes daily accrual interest and partial repayments.
    */
-  async settle(loanId: string, amount: number): Promise<{ walletTransactionId: string }> {
+  async settle(loanId: string, amount: number): Promise<{ walletTransactionId: string, status: LoanStatus }> {
     return this.db.transaction(async (trx) => {
       const loan = await this.db<any>('loans').where({ id: loanId }).forUpdate().transacting(trx).first();
       if (!loan) throw new PreconditionNotMetError(`Loan ${loanId} not found`);
 
-      // Idempotency check: if Already settled, return dummy or throw
       if (loan.status === LoanStatus.SETTLED) {
         throw new PreconditionNotMetError('Loan is already settled');
       }
 
-      // Check state
-      try {
-        LoanStateMachine.assertTransition(loan.status, LoanStatus.SETTLED);
-      } catch {
-        throw new InvalidStateTransitionError(loan.status, LoanStatus.SETTLED);
-      }
-
-      const loanAmount = Number(loan.amount);
+      const contract = await this.db<any>('contracts').where({ loan_id: loanId }).forUpdate().transacting(trx).first();
+      if (!contract) throw new Error('Contract not found for loan');
 
       // Lock both wallets
       const borrowerWallet = await this.walletRepo.findByUserId(loan.borrower_id, trx);
@@ -135,9 +129,9 @@ export class DisbursementService {
       const lockedBorrowerWallet = await this.walletRepo.findByIdForUpdate(borrowerWallet.id, trx);
       if (!lockedBorrowerWallet) throw new PreconditionNotMetError('Borrower wallet lock failed');
 
-      if (Number(lockedBorrowerWallet.balance) < loanAmount) {
+      if (Number(lockedBorrowerWallet.balance) < amount) {
         throw new InsufficientFundsError(
-          `Borrower balance (${lockedBorrowerWallet.balance}) is insufficient to repay loan amount (${loanAmount})`
+          `Borrower balance (${lockedBorrowerWallet.balance}) is insufficient to make repayment of (${amount})`
         );
       }
 
@@ -146,34 +140,52 @@ export class DisbursementService {
       const lockedLenderWallet = await this.walletRepo.findByIdForUpdate(lenderWallet.id, trx);
       if (!lockedLenderWallet) throw new PreconditionNotMetError('Lender wallet lock failed');
 
-      // Debit borrower
-      const newBorrowerBalance = Number(lockedBorrowerWallet.balance) - loanAmount;
+      // Transfer Funds
+      const newBorrowerBalance = Number(lockedBorrowerWallet.balance) - amount;
       await this.walletRepo.updateBalance(lockedBorrowerWallet.id, newBorrowerBalance, trx);
 
-      // Credit lender
-      const newLenderBalance = Number(lockedLenderWallet.balance) + loanAmount;
+      const newLenderBalance = Number(lockedLenderWallet.balance) + amount;
       await this.walletRepo.updateBalance(lockedLenderWallet.id, newLenderBalance, trx);
 
-      // Record transaction
       const walletTx = await this.walletRepo.insertTransaction(
         {
           loan_id: loanId,
           debit_wallet_id: lockedBorrowerWallet.id,
           credit_wallet_id: lockedLenderWallet.id,
-          amount: loanAmount,
+          amount: amount,
         },
         trx
       );
 
-      // Update schema markers
-      await this.db('loans')
-        .where({ id: loanId })
-        .update({ status: LoanStatus.SETTLED, updated_at: new Date() })
-        .transacting(trx);
+      // Interest Calculation
+      const lastPayment = contract.last_payment_at ? new Date(contract.last_payment_at) : new Date(contract.issued_at);
+      const daysElapsed = Math.max(0, (Date.now() - lastPayment.getTime()) / (1000 * 60 * 60 * 24));
+      const interestRate = Number(loan.interest_rate || 0);
+      const dailyRate = (interestRate / 100) / 365;
+      
+      const outstanding = Number(contract.outstanding_principal);
+      const accruedInterest = outstanding * dailyRate * daysElapsed;
+      
+      let remainder = amount - accruedInterest;
+      let newPrincipal = outstanding;
+      
+      if (remainder > 0) {
+        newPrincipal -= remainder;
+      }
 
-      await this.contractRepo.settle(loanId, trx);
+      let newStatus = LoanStatus.DISBURSED;
+      
+      if (newPrincipal <= 0.01) {
+         // Mark as completely settled
+         newStatus = LoanStatus.SETTLED;
+         await this.db('loans').where({ id: loanId }).update({ status: LoanStatus.SETTLED, updated_at: new Date() }).transacting(trx);
+         await this.contractRepo.settle(loanId, trx);
+      } else {
+         // Still active, just partial 
+         await this.contractRepo.updatePrincipal(loanId, newPrincipal, trx);
+      }
 
-      return { walletTransactionId: walletTx.id };
+      return { walletTransactionId: walletTx.id, status: newStatus };
     });
   }
 }

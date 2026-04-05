@@ -56,6 +56,13 @@ export default function Community() {
                     <div>
                       <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 group-hover:text-bitcoin-600 dark:group-hover:text-bitcoin-400 transition-colors">{user.username}</div>
                       <div className="text-[10px] text-slate-500 font-mono">{user.walletAddress.slice(0,10)}...</div>
+                      <div
+                        className="text-[9px] text-slate-400 font-mono mt-0.5 cursor-pointer hover:text-bitcoin-500 transition-colors flex items-center gap-1"
+                        title="Click to copy User ID"
+                        onClick={(e) => { e.preventDefault(); navigator.clipboard.writeText(user.userId); }}
+                      >
+                        ID: {user.userId.slice(0, 16)}… <span className="text-[8px] bg-slate-100 dark:bg-surface-800 px-1 rounded">copy</span>
+                      </div>
                     </div>
                   </div>
                   <div className="hidden sm:block text-right pr-8 font-mono font-bold text-slate-700 dark:text-slate-400">

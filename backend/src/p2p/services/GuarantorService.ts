@@ -29,6 +29,10 @@ export class GuarantorService {
     }
 
     await this.guarantorRepo.updateStatus(guarantor.id, GuarantorStatus.APPROVED);
+    
+    // Also mark one unfulfilled 'guarantors' requirement as fulfilled for UI display
+    await this.guarantorRepo.fulfillOneRequirement(loanId);
+
     return { ...guarantor, status: GuarantorStatus.APPROVED };
   }
 

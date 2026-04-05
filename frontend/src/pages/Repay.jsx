@@ -25,6 +25,7 @@ export default function Repay() {
         borrowerId: c.borrower_id,
         lenderId: c.lender_id,
         status: c.status === 'pending' ? 'ACTIVE' : 'REPAID',
+        outstanding_principal: parseFloat(c.outstanding_principal) || 0,
         borrowerName: c.borrowerName || 'Unknown Counterparty',
         lenderName: c.lenderName
       })) : [];
@@ -60,7 +61,7 @@ export default function Repay() {
     }
   };
 
-  const remainingPrincipal = selectedLoan ? parseFloat(selectedLoan.amount) - (selectedLoan.repaidAmount || 0) : 0;
+  const remainingPrincipal = selectedLoan ? selectedLoan.outstanding_principal : 0;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
@@ -94,7 +95,7 @@ export default function Repay() {
                       currentUserId={user?.userId} 
                       onRepay={() => {
                         setSelectedLoan(loan);
-                        setAmount(loan.amount - (loan.repaidAmount || 0));
+                        setAmount(loan.outstanding_principal);
                         setError('');
                         setSuccess('');
                       }} 

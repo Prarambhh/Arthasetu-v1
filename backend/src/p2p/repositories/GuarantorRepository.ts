@@ -28,6 +28,18 @@ export class GuarantorRepository {
       .update({ status, responded_at: new Date() });
   }
 
+  async fulfillOneRequirement(loanId: string): Promise<void> {
+    const unfulfilled = await this.db('loan_requirements')
+      .where({ loan_id: loanId, type: 'guarantors', fulfilled: false })
+      .first();
+      
+    if (unfulfilled) {
+      await this.db('loan_requirements')
+        .where({ id: unfulfilled.id })
+        .update({ fulfilled: true });
+    }
+  }
+
   /** Returns rejected guarantor display names (joined with users) */
   async getRejectedGuarantorNames(loanId: string): Promise<string[]> {
     const rows = await this.db('guarantors')
