@@ -16,9 +16,13 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-// Ensure data directory exists
+// Ensure data and uploads directories exist
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Initialize blockchain (loads from disk or creates genesis)
 const { getBlockchain } = require('./src/blockchain/Blockchain');

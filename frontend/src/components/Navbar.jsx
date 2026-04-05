@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useWeb3 } from '../context/Web3Context';
 import { formatAddress } from '../utils/wallet';
 import {
   LayoutDashboard, TrendingDown, TrendingUp, RotateCcw,
-  Blocks, Users, LogOut, Menu, X, Landmark, Sun, Moon, Wallet
+  Blocks, Users, LogOut, Menu, X, Landmark, Sun, Moon, Wallet, ShieldCheck
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -15,12 +16,14 @@ const navLinks = [
   { to: '/repay',     label: 'Repay',     icon: RotateCcw },
   { to: '/explorer',  label: 'Explorer',  icon: Blocks },
   { to: '/community', label: 'Community', icon: Users },
+  { to: '/guarantor-requests', label: 'Guarantor', icon: ShieldCheck },
   { to: '/wallet',    label: 'Wallet',    icon: Wallet },
 ];
 
 export function Navbar() {
   const { user, logoutUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { account, ausdBalance, connectWallet, disconnectWallet, connecting, chainError } = useWeb3();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -66,6 +69,29 @@ export function Navbar() {
 
             {user ? (
               <>
+                {/* MetaMask wallet section */}
+                {account ? (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <div className="text-right">
+                      <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">AUSD Balance</div>
+                      <div className="text-sm font-bold font-mono text-emerald-700 dark:text-emerald-300">{Number(ausdBalance).toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
+                    </div>
+                    <button onClick={disconnectWallet} title="Disconnect Wallet" className="ml-1 text-slate-400 hover:text-rose-500 transition-colors">
+                      <LogOut className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={connectWallet}
+                    disabled={connecting}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide bg-bitcoin-500 text-white hover:bg-bitcoin-400 transition-colors flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Wallet className="w-3.5 h-3.5" />
+                    {connecting ? 'Connecting...' : 'Connect MetaMask'}
+                  </button>
+                )}
+                {chainError && <span className="text-xs text-rose-500 font-medium max-w-[120px] truncate">{chainError}</span>}
                 <Link to={`/profile/${user.userId}`} className="flex items-center gap-3 px-3 py-1.5 rounded-lg border border-borderc-light dark:border-borderc-dark bg-white dark:bg-surface-dark hover:border-bitcoin-500/50 hover:shadow-sm dark:hover:shadow-glow-orange transition-all cursor-pointer group">
                   <div className="text-right">
                     <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">{user.username}</div>

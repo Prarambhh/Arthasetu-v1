@@ -14,12 +14,34 @@ export class LoanLifecycleService {
     private readonly disbursementService: DisbursementService
   ) {}
 
-  async createLoan(data: { borrowerId: string; amount: number }) {
+  async createLoan(data: { id?: string; borrowerId: string; amount: number; status?: LoanStatus }) {
     return this.loanRepo.create({
+      id: data.id,
       borrower_id: data.borrowerId,
       lender_id: undefined as any, // Nullable in DB
       amount: data.amount,
+      status: data.status,
     });
+  }
+
+  async syncOnChainLoan(data: { id: string; borrowerId: string; amount: number }) {
+    // Check if it already exists
+    const existing = await this.loanRepo.findById(data.id);
+    if (existing) return existing;
+
+    // Create directly in REQUESTED state, but add requirements for documents automatically
+    const loan = await this.createLoan({
+      id: data.id,
+      borrowerId: data.borrowerId,
+      amount: data.amount,
+      status: LoanStatus.REQUESTED
+    });
+
+    // Enforce Govt ID and Income Proof automatically for synced on-chain loans
+    await this.loanRepo.addRequirement({ loan_id: data.id, type: RequirementType.DOCUMENT, label: 'Government ID' });
+    await this.loanRepo.addRequirement({ loan_id: data.id, type: RequirementType.DOCUMENT, label: 'Income Validation' });
+
+    return loan;
   }
 
   async acceptApplication(loanId: string, lenderId: string, interestRate: number) {

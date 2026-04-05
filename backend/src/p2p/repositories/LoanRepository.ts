@@ -9,9 +9,11 @@ export class LoanRepository {
   }
 
   async create(data: {
+    id?: string;
     borrower_id: string;
-    lender_id: string;
+    lender_id?: string;
     amount: number;
+    status?: LoanStatus;
   }): Promise<Loan> {
     const [loan] = await this.db<Loan>('loans').insert(data).returning('*');
     return loan;

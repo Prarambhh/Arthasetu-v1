@@ -438,5 +438,41 @@
     },
     "prevHash": "b0f2c43586ff1873c6c907d0c0d146a542c4ca77ae72553b7541f686eb7a93b5",
     "hash": "bddbb5ffd85e3bd498ede8d06364482dcf9d54c7a40c2b9bee143f6411677500"
+  },
+  {
+    "index": 35,
+    "timestamp": "2026-04-05T01:51:21.194Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "85cccf21-30eb-400c-bd6b-6490c540d867",
+      "username": "alice",
+      "walletAddress": "0xa7b7053cb9fd0cfc78fbf2dc48c40d3e3ab44327"
+    },
+    "prevHash": "bddbb5ffd85e3bd498ede8d06364482dcf9d54c7a40c2b9bee143f6411677500",
+    "hash": "dcd65a7c9b14ca554e8090704f105701c70dd9c95ccc18de992846cc619bc324"
+  },
+  {
+    "index": 36,
+    "timestamp": "2026-04-05T01:54:24.409Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "5c6c8a7e-ac33-482a-8366-b364491f4b58",
+      "username": "testuser123",
+      "walletAddress": "0xce7fe532917758a5725edfed1812a5819a205135"
+    },
+    "prevHash": "dcd65a7c9b14ca554e8090704f105701c70dd9c95ccc18de992846cc619bc324",
+    "hash": "2fba0f766161e21ab98f4f8e4eb5874b0548a9178a4fab9dc074c26a637dc8e5"
+  },
+  {
+    "index": 37,
+    "timestamp": "2026-04-05T04:13:42.148Z",
+    "type": "USER_REGISTERED",
+    "data": {
+      "userId": "70113313-55c3-41ee-869f-b72e6b5f6c82",
+      "username": "TestLender",
+      "walletAddress": "0xb36bb21c5ecb521ce9b485c5215a894932f41b96"
+    },
+    "prevHash": "2fba0f766161e21ab98f4f8e4eb5874b0548a9178a4fab9dc074c26a637dc8e5",
+    "hash": "503fadeb10394b80eb0c50fc17e0d38a52aa6ad87f02583e7335f2aa845866c6"
   }
 ]

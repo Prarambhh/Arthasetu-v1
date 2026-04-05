@@ -28,14 +28,28 @@ export const getPendingBroadcasts = () => API.get('/api/v2/loans/pending');
 export const createLoan = (amount) => API.post('/api/v2/loans', { amount });
 export const acceptLoan = (loanId, interestRate) => API.post(`/api/v2/loans/${loanId}/accept`, { interestRate });
 export const addRequirements = (loanId, requirements) => API.post(`/api/v2/loans/${loanId}/requirements`, { requirements });
-export const uploadDocument = (loanId, requirementId, fileReference) => API.post(`/api/v2/loans/${loanId}/documents`, { requirementId, fileReference });
+export const uploadDocument = (loanId, requirementId, fileOrUrl) => {
+  if (fileOrUrl instanceof File) {
+    const formData = new FormData();
+    formData.append('requirementId', requirementId);
+    formData.append('file', fileOrUrl);
+    return API.post(`/api/v2/loans/${loanId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+  return API.post(`/api/v2/loans/${loanId}/documents`, { requirementId, fileReference: fileOrUrl });
+};
 export const triggerReview = (loanId) => API.post(`/api/v2/loans/${loanId}/review`);
 export const approveLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/approve`);
 export const rejectLoan = (loanId) => API.post(`/api/v2/loans/${loanId}/reject`);
 export const getLoanDetail = (loanId) => API.get(`/api/v2/loans/${loanId}`);
-export const repayLoan = (loanId, amount) => API.post(`/api/v2/loans/${loanId}/repay`, { amount }); // TODO: V2 Backend Implementation Required
+export const syncOnChainLoan = (id, amount) => API.post('/api/v2/loans/sync', { id, amount });
+export const hybridApprove = (loanId, interestRate) => API.post(`/api/v2/loans/${loanId}/hybrid-approve`, { interestRate });
+export const repayLoan = (loanId, amount) => API.post(`/api/v2/loans/${loanId}/repay`, { amount }); // V2 Backend Implementation Required
 
 // ── Guarantors v2 ────────────────────────────────────────────────────────
+export const addBorrowerGuarantor = (loanId, userId) => API.post(`/api/v2/loans/${loanId}/add-guarantor`, { userId });
+export const getGuarantorsForLoan = (loanId) => API.get(`/api/v2/loans/${loanId}/guarantors`);
 export const getMyGuarantorRecord = (loanId) => API.get(`/api/v2/loans/${loanId}/guarantors/me`);
 export const approveGuarantor = (loanId) => API.post(`/api/v2/loans/${loanId}/guarantors/me/approve`);
 export const rejectGuarantor = (loanId) => API.post(`/api/v2/loans/${loanId}/guarantors/me/reject`);

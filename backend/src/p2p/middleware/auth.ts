@@ -55,6 +55,7 @@ export async function assertLoanAccess(
     .where(function () {
       this.where('loans.borrower_id', userId)
         .orWhere('loans.lender_id', userId)
+        .orWhereNull('loans.lender_id')
         .orWhereNotNull('guarantors.id');
     })
     .select('loans.id')

@@ -4,7 +4,7 @@
     "username": "alice_defi",
     "walletAddress": "0xc90b37179bfe2cd9fa6658c47b4ca9e49412a416",
     "publicKey": "041531ecebcb0e2e44ecdf331769c4875b5686cd807ad5cee07a240b2737e357ff76d551a83d8128198f726ab18f46190ef10d298b28dfe1b47acf656bde3592e6",
-    "nonce": "afa4c0a1-9775-4823-918e-d07bf449cb2c",
+    "nonce": "72ada87f-5847-462e-9a51-a7420c547157",
     "creditScore": 100,
     "trustTier": "PRIME",
     "loanHistory": [
@@ -23,7 +23,7 @@
     "username": "bob_lender",
     "walletAddress": "0xf8950cc6a551f257764339fefa8e281fee6aaa68",
     "publicKey": "04cc24c23067fe3dec677476271e26853c65d0edc76278e72703fed1780af6c2c68e7e9b0c80a58417c10b99475ee16b34ad24f8914f69c8bdeef9f4d9920ea3c7",
-    "nonce": "67f569a0-c705-4a83-aa37-61c24fdd153d",
+    "nonce": "24dd137d-3d81-4980-ad5a-bc75a127df3c",
     "creditScore": 50,
     "trustTier": "MODERATE",
     "loanHistory": [
@@ -372,5 +372,50 @@
     "missedPayments": 0,
     "activeLoans": 0,
     "createdAt": "2026-04-04T22:35:20.743Z"
+  },
+  {
+    "userId": "85cccf21-30eb-400c-bd6b-6490c540d867",
+    "username": "alice",
+    "walletAddress": "0xa7b7053cb9fd0cfc78fbf2dc48c40d3e3ab44327",
+    "publicKey": "04951ae2bb4106223c7d169978dc946248a04d0961d87b9756a6119d32f5cfdbf0b5f992654245fc06f9488c22f7ac18d2befaefd75159f4cd804c59b5c073bf3f",
+    "nonce": "290690e1-bd28-4cb7-b501-65ef495a89a0",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-05T01:51:21.190Z"
+  },
+  {
+    "userId": "5c6c8a7e-ac33-482a-8366-b364491f4b58",
+    "username": "testuser123",
+    "walletAddress": "0xce7fe532917758a5725edfed1812a5819a205135",
+    "publicKey": "046fc7fafed2de82555834de7ab00256b7522ad39b2e41c9898bbda99bb8fda5b9b5cb82a6c99ad034725662bff52f68aec95530149fe8936c1279da5e7223bdde",
+    "nonce": "2a129e10-f0af-4257-b246-356ea0b6dd34",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-05T01:54:24.408Z"
+  },
+  {
+    "userId": "70113313-55c3-41ee-869f-b72e6b5f6c82",
+    "username": "TestLender",
+    "walletAddress": "0xb36bb21c5ecb521ce9b485c5215a894932f41b96",
+    "publicKey": "04ea42b5d7961428147841576eb55a81792474391073c1811480ab65a7d50ae97ceee9050b47cd9a570c669c1ad13ead89f73b0c43ee106d3f017c44bb3f5281b2",
+    "nonce": "bd3fa10a-d5fd-4b92-a307-d5579772db0e",
+    "creditScore": 50,
+    "trustTier": "MODERATE",
+    "loanHistory": [],
+    "balance": 10000,
+    "onTimeRepayments": 0,
+    "missedPayments": 0,
+    "activeLoans": 0,
+    "createdAt": "2026-04-05T04:13:42.147Z"
   }
 ]

@@ -11,7 +11,9 @@ import Profile from './pages/Profile';
 import Explorer from './pages/Explorer';
 import Community from './pages/Community';
 import LoanDetail from './pages/LoanDetail';
+import GuarantorRequests from './pages/GuarantorRequests';
 import Wallet from './pages/Wallet';
+import { Web3Provider } from './context/Web3Context';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -40,6 +42,7 @@ function AppRoutes() {
         <Route path="/lend" element={<ProtectedRoute><Lend /></ProtectedRoute>} />
         <Route path="/repay" element={<ProtectedRoute><Repay /></ProtectedRoute>} />
         <Route path="/loan/:id" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
+        <Route path="/guarantor-requests" element={<ProtectedRoute><GuarantorRequests /></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -50,9 +53,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <Web3Provider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </Web3Provider>
     </AuthProvider>
   );
 }

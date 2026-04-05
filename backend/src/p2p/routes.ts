@@ -39,6 +39,9 @@ const router = Router();
 router.use(authenticate);
 
 // ── Loan lifecycle ────────────────────────────────────────────────────────────
+//  POST /loans/sync
+router.post('/loans/sync', loanCtrl.sync);
+
 //  POST /loans
 router.post('/loans', loanCtrl.create);
 
@@ -48,8 +51,23 @@ router.post('/loans/:id/accept', loanCtrl.accept);
 //  POST /loans/:id/requirements
 router.post('/loans/:id/requirements', loanCtrl.addRequirements);
 
+import multer from 'multer';
+import path from 'path';
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../../../uploads'));
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
 //  POST /loans/:id/documents
-router.post('/loans/:id/documents', loanCtrl.uploadDocument);
+router.post('/loans/:id/documents', upload.single('file'), loanCtrl.uploadDocument);
 
 //  POST /loans/:id/review
 router.post('/loans/:id/review', loanCtrl.triggerReview);
@@ -59,6 +77,9 @@ router.post('/loans/:id/approve', loanCtrl.approve);
 
 //  POST /loans/:id/reject
 router.post('/loans/:id/reject', loanCtrl.reject);
+
+//  POST /loans/:id/hybrid-approve
+router.post('/loans/:id/hybrid-approve', loanCtrl.hybridApprove);
 
 //  POST /loans/:id/repay
 router.post('/loans/:id/repay', loanCtrl.repay);
@@ -73,6 +94,12 @@ router.get('/loans/me', loanCtrl.getMyAccessibleLoans);
 router.get('/loans/:id', loanCtrl.getById);
 
 // ── Guarantors ────────────────────────────────────────────────────────────────
+//  POST /loans/:id/add-guarantor  (Borrower nominates a guarantor)
+router.post('/loans/:id/add-guarantor', loanCtrl.addGuarantor);
+
+//  GET  /loans/:id/guarantors  (List all guarantors for a loan)
+router.get('/loans/:id/guarantors', loanCtrl.getGuarantors);
+
 //  GET  /loans/:id/guarantors/me
 router.get('/loans/:id/guarantors/me', guarantorCtrl.getMyRecord);
 
